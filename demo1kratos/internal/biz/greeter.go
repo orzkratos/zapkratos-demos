@@ -36,7 +36,10 @@ type GreeterUsecase struct {
 
 // NewGreeterUsecase new a Greeter usecase.
 func NewGreeterUsecase(repo GreeterRepo, zapKratos *zapkratos.ZapKratos) *GreeterUsecase {
-	return &GreeterUsecase{repo: repo, zapLog: zapKratos.SubZap()}
+	return &GreeterUsecase{
+		repo:   repo,
+		zapLog: zapKratos.SubZap(),
+	}
 }
 
 // CreateGreeter creates a Greeter, and returns the new Greeter.
