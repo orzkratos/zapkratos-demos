@@ -14,8 +14,8 @@ Some demo projects of using Go-Kratos framework
 
 The project includes two demos to showcase the usage of various features:
 
-- [Demo1](demo1kratos)
-- [Demo2](demo2kratos)
+- [Demo1](./demo1kratos)
+- [Demo2](./demo2kratos)
 
 We provide a code comparison between Demo1 and Demo2, highlighting the changed code blocks.
 
@@ -27,6 +27,7 @@ When this project is forked, you can also compare it with the source to see the 
 |:-----------:|:-----------------------------------------------:|
 |   ast-go    |  https://github.com/orzkratos/astkratos-demos   |
 | spf13/cobra | https://github.com/orzkratos/cobrakratos-demos  |
+|  http-cors  | https://github.com/orzkratos/cors-kratos-demos  |
 |    i18n     |  https://github.com/orzkratos/i18nkratos-demos  |
 |    nacos    | https://github.com/orzkratos/nacos-kratos-demos |
 | swagger-doc | https://github.com/orzkratos/swaggokratos-demos |
