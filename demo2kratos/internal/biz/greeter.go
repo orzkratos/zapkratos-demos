@@ -4,8 +4,9 @@ import (
 	"context"
 
 	"github.com/go-kratos/kratos/v2/errors"
-	"github.com/go-kratos/kratos/v2/log"
 	v1 "github.com/orzkratos/demokratos/demo2kratos/api/helloworld/v1"
+	"github.com/orzkratos/zapkratos"
+	"github.com/yyle88/zaplog"
 )
 
 var (
@@ -29,17 +30,20 @@ type GreeterRepo interface {
 
 // GreeterUsecase is a Greeter usecase.
 type GreeterUsecase struct {
-	repo GreeterRepo
-	log  *log.Helper
+	repo   GreeterRepo
+	zapLog *zaplog.Zap
 }
 
 // NewGreeterUsecase new a Greeter usecase.
-func NewGreeterUsecase(repo GreeterRepo, logger log.Logger) *GreeterUsecase {
-	return &GreeterUsecase{repo: repo, log: log.NewHelper(logger)}
+func NewGreeterUsecase(repo GreeterRepo, zapKratos *zapkratos.ZapKratos) *GreeterUsecase {
+	return &GreeterUsecase{
+		repo:   repo,
+		zapLog: zapKratos.SubZap(),
+	}
 }
 
 // CreateGreeter creates a Greeter, and returns the new Greeter.
 func (uc *GreeterUsecase) CreateGreeter(ctx context.Context, g *Greeter) (*Greeter, error) {
-	uc.log.WithContext(ctx).Infof("CreateGreeter: %v", g.Hello)
+	uc.zapLog.SUG.Infof("CreateGreeter: %v", g.Hello)
 	return uc.repo.Save(ctx, g)
 }

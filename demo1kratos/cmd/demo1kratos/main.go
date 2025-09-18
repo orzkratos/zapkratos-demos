@@ -15,7 +15,6 @@ import (
 	"github.com/yyle88/must"
 	"github.com/yyle88/rese"
 	"github.com/yyle88/zaplog"
-	_ "go.uber.org/automaxprocs"
 	"go.uber.org/zap"
 )
 
