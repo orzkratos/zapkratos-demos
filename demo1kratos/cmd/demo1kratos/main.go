@@ -51,7 +51,7 @@ func main() {
 
 	zapKratos := zapkratos.NewZapKratos(zaplog.LOGGER, zapkratos.NewOptions())
 	zapLog := zapKratos.SubZap()
-	zapLog.LOG.Info("version", zap.String("version", Version))
+	zapLog.LOG.Info("application starting...")
 	zapLog.LOG.Info("reading-config-from-path", zap.String("config", flagconf))
 
 	c := config.New(

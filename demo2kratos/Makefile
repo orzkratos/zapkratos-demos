@@ -1,6 +1,11 @@
 GOHOSTOS:=$(shell go env GOHOSTOS)
 GOPATH:=$(shell go env GOPATH)
-VERSION=$(shell git describe --tags --always)
+#这是官方推荐的
+#VERSION=$(shell git describe --tags --always)
+#因为在开发阶段都是不打标签的，在很长的时间里可能都没有标签，这里使用较长的提交哈希
+#VERSION=$(shell git describe --tags 2>/dev/null || git rev-parse HEAD)
+#这样就能涵盖需要的
+VERSION=$(shell git describe --tags --always --abbrev=40 --dirty=+code)
 
 ifeq ($(GOHOSTOS), windows)
 	#the `find.exe` is different from `find` in bash/shell.

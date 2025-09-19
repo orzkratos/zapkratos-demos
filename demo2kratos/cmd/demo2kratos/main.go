@@ -17,6 +17,7 @@ import (
 	"github.com/yyle88/must"
 	"github.com/yyle88/osexistpath/osmustexist"
 	"github.com/yyle88/rese"
+	"github.com/yyle88/tern/zerotern"
 	"github.com/yyle88/zaplog"
 	"go.uber.org/zap"
 )
@@ -52,26 +53,35 @@ func newApp(gs *grpc.Server, hs *http.Server, zapKratos *zapkratos.ZapKratos) *k
 func main() {
 	flag.Parse()
 
-	rootBin := osmustexist.ROOT(filepath.Join(demo2kratos.SourceRoot(), "bin"))
-	path1 := filepath.Join(rootBin, "log-newest.log")
-	path2 := filepath.Join(rootBin, "log-oldest.log")
+	{
+		rootBin := osmustexist.ROOT(filepath.Join(demo2kratos.SourceRoot(), "bin"))
+		path1 := filepath.Join(rootBin, "log-newest.log")
+		path2 := filepath.Join(rootBin, "log-oldest.log")
 
-	if osmustexist.IsFile(path1) {
-		must.Done(os.Truncate(path1, 0))
+		// Clean session log on startup
+		// 启动时清空会话日志
+		if osmustexist.IsFile(path1) {
+			must.Done(os.Truncate(path1, 0))
+		}
+
+		// Set default zap log to stdout and disk-file
+		// 设置默认 zap 日志输出到标准输出和日志文件
+		zaplog.SetLog(rese.P1(zaplog.NewZapLog(zaplog.NewConfig().
+			AddOutputPaths(
+				path1, path2, // Also log to file // 也输出到文件
+			))).With(
+			zap.String("service", zerotern.VF(Name, func() string {
+				return filepath.Base(demo2kratos.SourceRoot())
+			})),
+			zap.String("version", zerotern.VV(Version, "v0.0.0")),
+		))
 	}
-
-	// Set default zap log to stdout and disk-file
-	// 设置默认 zap 日志输出到标准输出和日志文件
-	zaplog.SetLog(rese.P1(zaplog.NewZapLog(zaplog.NewConfig().
-		AddOutputPaths(
-			path1, path2, // Also log to file // 也输出到文件
-		))))
 
 	// Create zapkratos logger with default zaplog
 	// 使用默认的 zaplog 创建 zapkratos 日志
 	zapKratos := zapkratos.NewZapKratos(zaplog.LOGGER, zapkratos.NewOptions())
 	zapLog := zapKratos.SubZap()
-	zapLog.LOG.Info("version", zap.String("version", Version))
+	zapLog.LOG.Info("application starting...")
 	zapLog.LOG.Info("reading-config-from-path", zap.String("config", flagconf))
 
 	c := config.New(
