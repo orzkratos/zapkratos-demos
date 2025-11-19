@@ -17,7 +17,16 @@ init:
 	go install github.com/go-mate/go-lint/cmd/go-lint@latest
 	# clang-format-batch: 批量格式化 proto 和 cpp 等多种语言代码
 	go install github.com/go-xlan/clang-format/cmd/clang-format-batch@latest
+	# protoc-gen-orzkratos-errors: proto 错误定义自动生成 Go 代码，提供错误码枚举和错误嵌套功能
+	go install github.com/orzkratos/errgenkratos/cmd/protoc-gen-orzkratos-errors@latest
 	@echo "✅ 工具安装完成！现在可以开始愉快地开发啦"
+
+# 使用命令行整理项目中的代码
+fmt:
+	@echo "开始整理所有演示项目的代码..."
+	cd demo1kratos && clang-format-batch --extensions=proto
+	cd demo2kratos && clang-format-batch --extensions=proto
+	@echo "✅ 所有项目的代码整理完成！"
 
 # 构建所有演示项目，包括 proto 生成、配置文件处理、代码生成等
 all:
@@ -44,6 +53,27 @@ orz:
 	@echo "✅ 同步完成！请检查生成的代码并完善业务逻辑"
 
 # ========================================
+# TEMPLATE BEGIN: TEST AND COVERAGE CONFIG
+# ========================================
+# Test and Coverage (GitHub Actions)
+# ========================================
+
+COVERAGE_DIR ?= .coverage.out
+
+# cp from: https://github.com/yyle88/gormrepo/blob/c31435669714611c9ebde6975060f48cd5634451/Makefile#L4
+test:
+	@if [ -d $(COVERAGE_DIR) ]; then rm -r $(COVERAGE_DIR); fi
+	@mkdir $(COVERAGE_DIR)
+	make test-with-flags TEST_FLAGS='-v -race -covermode atomic -coverprofile $$(COVERAGE_DIR)/combined.txt -bench=. -benchmem -timeout 20m'
+
+test-with-flags:
+	@go test $(TEST_FLAGS) ./...
+
+# ========================================
+# TEMPLATE END: TEST AND COVERAGE CONFIG
+# ========================================
+
+# ========================================
 # 同步上游仓库最新修改到 fork 项目的完整流程
 # ========================================
 # 背景说明：
@@ -63,6 +93,13 @@ orz:
 merge-step1:
 	# 添加上游仓库为远程源，智能处理重复添加的情况
 	# 注意: 如果 upstream 远程源已存在，而且是同名仓库，就忽略重复的错误，因为这不是问题，但是假如指向其他仓库，就报错，而且不往下执行
+	# 检查当前是否是源项目本身
+	@ORIGIN_REPO=$$(git remote get-url origin 2>/dev/null || echo ""); \
+	if echo "$$ORIGIN_REPO" | grep -q "orzkratos/demokratos.git"; then \
+		echo "⚠️  当前是源项目，该操作仅适用于 fork 项目"; \
+		exit 1; \
+	fi
+	# 执行上游仓库添加逻辑
 	@EXPECTED_REPO="git@github.com:orzkratos/demokratos.git"; \
 	if git remote get-url upstream >/dev/null 2>&1; then \
 		CURRENT_REPO=$$(git remote get-url upstream); \
@@ -86,6 +123,8 @@ merge-step2:
 	# 获取上游仓库的最新代码，不获取标签以避免冲突
 	git fetch --no-tags upstream main
 	@echo "✅ 已获取上游仓库最新代码"
+	# 假如你不小心已经同步源项目的标签，还可以这样让从远程完全同步子项目的标签
+	# git fetch origin --tags --prune --prune-tags
 
 merge-step3:
 	# 确保当前在 main 分支里
@@ -106,6 +145,7 @@ merge-step5:
 	git status
 	# 【重要提醒】假如出现冲突，请严格按照以下步骤操作：
 	# 1. 编辑冲突文件，逐个解决所有 <<<<<<< ======= >>>>>>> 标记的冲突
+	# 【技巧策略】假如是go.mod有冲突，在仅版本不同时，通过比较来挑选较新的版号
 	# 【技巧策略】假如是go.sum有冲突，也可以不手动改，而是在解决完 go.mod 的冲突后执行 go mod tidy 即可解决
 	# 2. 使用 git add <文件名> 将解决后的文件标记为已解决
 	# 3. 继续合并流程：git merge --continue（绝对不要使用 git commit）
